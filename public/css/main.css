@@ -21,3 +21,10 @@ body {
 #forgeViewer {
   width: 100%;
 }
+
+.my-view-front-button {
+  background: red;
+}
+.my-view-back-button {
+  background: blue;
+}
