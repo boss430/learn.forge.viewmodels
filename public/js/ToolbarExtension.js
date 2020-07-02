@@ -33,6 +33,7 @@ ToolbarExtension.prototype.createUI = function () {
     var button1 = new Autodesk.Viewing.UI.Button('my-view-front-button');
     button1.onClick = function (e) {
         viewer.setViewCube('front');
+        // console.log(viewer.getSelection())
     };
     button1.addClass('my-view-front-button');
     button1.setToolTip('View front');
