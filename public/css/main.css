@@ -23,7 +23,7 @@ body {
 }
 
 .my-view-front-button {
-  background: rgb(25, 221, 42);
+  background: red;
 }
 .my-view-back-button {
   background: blue;

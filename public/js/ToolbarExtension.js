@@ -1,11 +1,10 @@
-//Extension Constructor
+
 function ToolbarExtension(viewer, options) {
     Autodesk.Viewing.Extension.call(this, viewer, options);
 }
 
 ToolbarExtension.prototype = Object.create(Autodesk.Viewing.Extension.prototype);
 ToolbarExtension.prototype.constructor = ToolbarExtension;
-//End of Entension Constructor
 
 ToolbarExtension.prototype.load = function () {
 
@@ -60,5 +59,4 @@ ToolbarExtension.prototype.unload = function () {
     return true;
 };
 
-//Extension register
 Autodesk.Viewing.theExtensionManager.registerExtension('ToolbarExtension', ToolbarExtension);
