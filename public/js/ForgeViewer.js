@@ -15,7 +15,7 @@
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 /////////////////////////////////////////////////////////////////////
-
+ 
 var viewer;
 
 function launchViewer(urn) {
@@ -26,7 +26,7 @@ function launchViewer(urn) {
 
   Autodesk.Viewing.Initializer(options, () => {
     var config3d = {
-      extensions: ['ToolbarExtension']
+      extensions: ['ToolbarExtension'] //Extension list
     };
     viewer = new Autodesk.Viewing.GuiViewer3D(document.getElementById('forgeViewer'), config3d);
     viewer.start();
