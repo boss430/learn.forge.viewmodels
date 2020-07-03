@@ -44,7 +44,6 @@ ToolbarExtension.prototype.createUI = function () {
     var button2 = new Autodesk.Viewing.UI.Button('my-view-back-button');
     button2.onClick = function (e) {
         viewer.setViewCube('back');
-        // viewer.setNavigationLock(false);
     };
     button2.addClass('my-view-back-button');
     button2.setToolTip('View Back');
