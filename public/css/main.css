@@ -28,3 +28,10 @@ body {
 .my-view-back-button {
   background: blue;
 }
+
+.show-env-bg-button {
+  background: rgb(183, 0, 255);
+}
+.hide-env-bg-button {
+  background: rgb(217, 255, 0);
+}

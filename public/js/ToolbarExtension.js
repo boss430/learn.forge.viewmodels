@@ -1,4 +1,3 @@
-
 function ToolbarExtension(viewer, options) {
     Autodesk.Viewing.Extension.call(this, viewer, options);
 }
@@ -32,8 +31,11 @@ ToolbarExtension.prototype.createUI = function () {
     // Button 1
     var button1 = new Autodesk.Viewing.UI.Button('my-view-front-button');
     button1.onClick = function (e) {
-        viewer.hideModel(viewer.getSelection()[0]);
+        // viewer.hideModel(viewer.getSelection()[0]);
+        viewer.setViewCube('front');
         // console.log(viewer.getSelection())
+        // viewer.setNavigationLock(true);
+        
     };
     button1.addClass('my-view-front-button');
     button1.setToolTip('View front');
