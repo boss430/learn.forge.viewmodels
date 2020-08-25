@@ -143,6 +143,14 @@ function autodeskCustomMenu(autodeskNode) {
             uploadFile();
           },
           icon: 'glyphicon glyphicon-cloud-upload'
+        },
+        deleteBucket: {
+          label: "Delete Bucket",
+          action: function () {
+            var treeNode = $('#appBuckets').jstree(true).get_selected(true)[0];
+            deleteBucket(treeNode);
+          },
+          icon: 'glyphicon glyphicon-trash'
         }
       };
       break;
@@ -198,7 +206,20 @@ function deleteObject(node) {
     url: '/api/forge/oss/deleteObjects',
     contentType: 'application/json',
     data: JSON.stringify({ 'bucketKey': bucketKey, 'objectName': objectName }),
-    success: (res) => {
+    success: () => {
+      $('#appBuckets').jstree(true).refresh();
+    }
+  })
+}
+
+function deleteBucket(node) {
+  $("#forgeViewer").empty();
+  var bucketKey = node.id;
+  jQuery.post({
+    url: '/api/forge/oss/deleteBuckets',
+    contentType: 'application/json',
+    data: JSON.stringify({ 'bucketKey': bucketKey }),
+    success: () => {
       $('#appBuckets').jstree(true).refresh();
     }
   })

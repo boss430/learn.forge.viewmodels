@@ -117,4 +117,14 @@ router.post('/deleteObjects', async (req, res, next) => {
     }
 });
 
+router.post('/deleteBuckets', async (req, res, next) => {
+    try {
+        await new BucketsApi().deleteBucket(req.body.bucketKey, req.oauth_client, req.oauth_token);
+        res.status(200).end();
+    } catch(err) {
+        console.log('oss error')
+        next(err);
+    }
+});
+
 module.exports = router;
