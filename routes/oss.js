@@ -108,4 +108,13 @@ router.post('/objects', multer({ dest: 'uploads/' }).single('fileToUpload'), asy
     });
 });
 
+router.post('/deleteObjects', async (req, res, next) => {
+    try {
+        await new ObjectsApi().deleteObject(req.body.bucketKey, req.body.objectName, req.oauth_client, req.oauth_token);
+        res.status(200).end();
+    } catch(err) {
+        next(err);
+    }
+});
+
 module.exports = router;

@@ -155,6 +155,14 @@ function autodeskCustomMenu(autodeskNode) {
             translateObject(treeNode);
           },
           icon: 'glyphicon glyphicon-eye-open'
+        },
+        deleteFile: {
+          label: "Delete",
+          action: () => {
+            var treeNode = $('#appBuckets').jstree(true).get_selected(true)[0];
+            deleteObject(treeNode);
+          },
+          icon: 'glyphicon glyphicon-trash'
         }
       };
       break;
@@ -180,4 +188,18 @@ function translateObject(node) {
       $("#forgeViewer").html('Translation started! Please try again in a moment.');
     },
   });
+}
+
+function deleteObject(node) {
+  $("#forgeViewer").empty();
+  var bucketKey = node.parents[0];
+  var objectName = node.text;
+  jQuery.post({
+    url: '/api/forge/oss/deleteObjects',
+    contentType: 'application/json',
+    data: JSON.stringify({ 'bucketKey': bucketKey, 'objectName': objectName }),
+    success: (res) => {
+      $('#appBuckets').jstree(true).refresh();
+    }
+  })
 }
