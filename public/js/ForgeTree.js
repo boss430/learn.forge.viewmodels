@@ -164,6 +164,14 @@ function autodeskCustomMenu(autodeskNode) {
           },
           icon: 'glyphicon glyphicon-eye-open'
         },
+        infoFile: {
+          label: "Info",
+          action: () => {
+            var treeNode = $('#appBuckets').jstree(true).get_selected(true)[0];
+            console.log(treeNode.id);
+          },
+          icon: 'glyphicon glyphicon-info-sign'
+        },
         deleteFile: {
           label: "Delete",
           action: () => {

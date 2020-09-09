@@ -26,7 +26,7 @@ function launchViewer(urn) {
 
   Autodesk.Viewing.Initializer(options, () => {
     var config3d = {
-      extensions: ['Autodesk.Viewing.MarkupsCore', 'Autodesk.Viewing.MarkupsGui']
+      extensions: ['Autodesk.Viewing.MarkupsCore', 'Autodesk.Viewing.MarkupsGui', 'ToolbarExtension']
     };
     viewer = new Autodesk.Viewing.GuiViewer3D(document.getElementById('forgeViewer'), config3d);
     viewer.start();
@@ -36,9 +36,7 @@ function launchViewer(urn) {
 }
 
 function onDocumentLoadSuccess(doc) {
-  console.log('success')
   var viewables = doc.getRoot().getDefaultGeometry();
-  console.log('not success')
   viewer.loadDocumentNode(doc, viewables).then(i => {
     // documented loaded, any action?
     console.log(viewables)

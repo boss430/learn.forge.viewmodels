@@ -51,7 +51,6 @@ router.post('/jobs', async (req, res, next) => {
     try {
         // Submit a translation job using [DerivativesApi](https://github.com/Autodesk-Forge/forge-api-nodejs-client/blob/master/docs/DerivativesApi.md#translate).
         const result = await new DerivativesApi().translate(job, {}, req.oauth_client, req.oauth_token);
-        console.log(result)
         res.status(200).end();
     } catch(err) {
         next(err);
