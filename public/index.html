@@ -36,14 +36,16 @@
       </ul>
     </div>
   </nav>
+  <button id="show">Show tree</button>
   <!-- End of navbar -->
   <div class="container-fluid fill">
     <div class="row fill">
-      <div class="col-sm-4 fill">
+      <div class="fill" id="forgeTree">
         <div class="panel panel-default fill">
           <div class="panel-heading" data-toggle="tooltip">
             Buckets &amp; Objects
             <span id="refreshBuckets" class="glyphicon glyphicon-refresh" style="cursor: pointer"></span>
+            <span id="hide" class="glyphicon glyphicon-eye-close" style="cursor: pointer"></span>
             <button class="btn btn-xs btn-info" style="float: right" id="showFormCreateBucket" data-toggle="modal"
               data-target="#createBucketModal">
               <span class="glyphicon glyphicon-folder-close"></span> New bucket
@@ -54,7 +56,7 @@
           </div>
         </div>
       </div>
-      <div class="col-sm-8 fill">
+      <div class="fill">
         <div id="forgeViewer"></div>
       </div>
     </div>
@@ -88,5 +90,15 @@
     </div>
   </div>
 </body>
+<script>
+  $("#hide").on('click', () => {
+    $("#forgeTree").toggle();
+    $("#show").toggle();
+  })
+  $("#show").on('click', () => {
+    $("#forgeTree").toggle();
+    $("#show").toggle();
+  })
+</script>
 
 </html>

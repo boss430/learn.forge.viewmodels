@@ -19,7 +19,24 @@ body {
 }
 
 #forgeViewer {
+  position: fixed;
   width: 100%;
+  height: calc(100% - 50px);
+  z-index: -1;
+}
+
+#forgeTree {
+  position: fixed;
+  left: 10px;
+  width: auto;
+}
+
+#show {
+  display: none;
+  position: fixed;
+  left: 0px;
+  top: 65px;
+  z-index: 5;
 }
 
 .my-view-front-button {
