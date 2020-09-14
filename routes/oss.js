@@ -77,7 +77,6 @@ router.get('/buckets', async (req, res, next) => {
 // POST /api/forge/oss/buckets - creates a new bucket.
 // Request body must be a valid JSON in the form of { "bucketKey": "<new_bucket_name>" }.
 router.post('/buckets', async (req, res, next) => {
-    console.log(req.body)
     let payload = new PostBucketsPayload();
     payload.bucketKey = config.credentials.client_id.toLowerCase() + '-' + req.body.bucketKey;
     payload.policyKey = 'temporary'; // expires in 24h
