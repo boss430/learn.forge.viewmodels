@@ -16,27 +16,32 @@ body {
   overflow: auto;
   width: 100%;
   height: calc(100vh - 150px);
+  z-index: 1;
 }
 
 #forgeViewer {
   position: fixed;
   width: 100%;
   height: calc(100% - 50px);
-  z-index: -1;
 }
 
 #forgeTree {
   position: fixed;
   left: 10px;
   width: auto;
+  z-index: 1;
 }
 
 #show {
   display: none;
   position: fixed;
-  left: 0px;
+  left: 10px;
   top: 65px;
-  z-index: 5;
+  z-index: 1;
+}
+
+.jstree-default-contextmenu {
+  z-index: 1;
 }
 
 .my-view-front-button {
