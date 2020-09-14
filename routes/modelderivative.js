@@ -50,9 +50,9 @@ router.post('/jobs', async (req, res, next) => {
     job.output.formats[0].views = ['2d', '3d'];
     try {
         // Submit a translation job using [DerivativesApi](https://github.com/Autodesk-Forge/forge-api-nodejs-client/blob/master/docs/DerivativesApi.md#translate).
-        const result = await new DerivativesApi().translate(job, {}, req.oauth_client, req.oauth_token);
+        const result = await new DerivativesApi().translate(job, { xAdsForce: true }, req.oauth_client, req.oauth_token);
         res.status(200).end();
-    } catch(err) {
+    } catch (err) {
         next(err);
     }
 });
