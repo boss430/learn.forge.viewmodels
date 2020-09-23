@@ -164,6 +164,14 @@ function autodeskCustomMenu(autodeskNode) {
           },
           icon: 'glyphicon glyphicon-eye-open'
         },
+        extractFile: {
+          label: "Extract metadata",
+          action: () => {
+            var treeNode = $('#appBuckets').jstree(true).get_selected(true)[0];
+            extractObject(treeNode)
+          },
+          icon: 'glyphicon glyphicon glyphicon-new-window'
+        },
         infoFile: {
           label: "Info",
           action: () => {
@@ -231,4 +239,31 @@ function deleteBucket(node) {
       $('#appBuckets').jstree(true).refresh();
     }
   })
+}
+
+function extractObject(node) {
+  $("#forgeViewer").empty();
+  if (node == null) node = $('#appBuckets').jstree(true).get_selected(true)[0];
+  var objectKey = node.id;
+  jQuery.post({
+    url: window.location.protocol + '//' + window.location.hostname +  ':3300/pestimate/report/json',
+    contentType: 'application/json',
+    data: JSON.stringify({ 'urn': objectKey, 'forceGet': "true" }),
+    success: function (res) {
+      $("#forgeViewer").html(`
+      <div class="alert alert-success alert-dismissible" role="alert" style="margin-left: 325px">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        ${res.status}
+      </div>
+      `);
+    },
+    error: function (res) {
+      $("#forgeViewer").html(`
+      <div class="alert alert-warning alert-dismissible" role="alert" style="margin-left: 325px">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        ${res.status}
+      </div>
+      `);
+    }
+  });
 }
