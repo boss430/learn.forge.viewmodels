@@ -42,7 +42,7 @@ $(document).ready(function () {
         formData.append('bucketKey', node.id);
 
         $.ajax({
-          url: '/api/forge/oss/objects',
+          url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/objects',
           data: formData,
           processData: false,
           contentType: false,
@@ -61,7 +61,7 @@ function createNewBucket() {
   var bucketKey = $('#newBucketKey').val();
   var policyKey = $('#newBucketPolicyKey').val();
   jQuery.post({
-    url: '/api/forge/oss/buckets',
+    url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/buckets',
     contentType: 'application/json',
     data: JSON.stringify({ 'bucketKey': bucketKey, 'policyKey': policyKey }),
     success: function (res) {
@@ -81,7 +81,7 @@ function prepareAppBucketTree() {
     'core': {
       'themes': { "icons": true },
       'data': {
-        "url": '/api/forge/oss/buckets',
+        "url": window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/buckets',
         "dataType": "json",
         'multiple': false,
         "data": function (node) {
@@ -180,6 +180,14 @@ function autodeskCustomMenu(autodeskNode) {
           },
           icon: 'glyphicon glyphicon-info-sign'
         },
+        downloadFile: {
+          label: "Download",
+          action: () => {
+            var treeNode = $('#appBuckets').jstree(true).get_selected(true)[0];
+            downloadObject(treeNode);
+          },
+          icon: 'glyphicon glyphicon glyphicon-download-alt'
+        },
         deleteFile: {
           label: "Delete",
           action: () => {
@@ -207,7 +215,7 @@ function translateObject(node) {
   jQuery.post({
     url: '/api/forge/modelderivative/jobs',
     contentType: 'application/json',
-    data: JSON.stringify({ 'bucketKey': bucketKey, 'objectName': objectKey }),
+    data: JSON.stringify({ 'bucketKey': bucketKey, 'fileName': objectKey }),
     success: function (res) {
       $("#forgeViewer").html('Translation started! Please try again in a moment.');
     },
@@ -219,9 +227,9 @@ function deleteObject(node) {
   var bucketKey = node.parents[0];
   var objectName = node.text;
   jQuery.post({
-    url: '/api/forge/oss/deleteObjects',
+    url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/deleteObjects',
     contentType: 'application/json',
-    data: JSON.stringify({ 'bucketKey': bucketKey, 'objectName': objectName }),
+    data: JSON.stringify({ 'bucketKey': bucketKey, 'fileName': objectName }),
     success: () => {
       $('#appBuckets').jstree(true).refresh();
     }
@@ -232,7 +240,7 @@ function deleteBucket(node) {
   $("#forgeViewer").empty();
   var bucketKey = node.id;
   jQuery.post({
-    url: '/api/forge/oss/deleteBuckets',
+    url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/deleteBuckets',
     contentType: 'application/json',
     data: JSON.stringify({ 'bucketKey': bucketKey }),
     success: () => {
@@ -246,7 +254,7 @@ function extractObject(node) {
   if (node == null) node = $('#appBuckets').jstree(true).get_selected(true)[0];
   var objectKey = node.id;
   jQuery.post({
-    url: window.location.protocol + '//' + window.location.hostname +  ':3300/pestimate/report/json',
+    url: window.location.protocol + '//' + window.location.hostname + ':3300/pestimate/report/json',
     contentType: 'application/json',
     data: JSON.stringify({ 'urn': objectKey, 'forceGet': "true" }),
     success: function (res) {
@@ -267,3 +275,16 @@ function extractObject(node) {
     }
   });
 }
+
+function downloadObject(node) {
+  var objectKey = node.id;
+  var link = document.createElement('a');
+  link.href = window.location.protocol + '//' + window.location.hostname + `:3300/forge/oss/download?urn=${objectKey}`;
+  link.id = 'download'
+  link.download = ''
+  link.click();
+}
+
+$('#download').click(function(e) {
+  e.preventDefault();  //stop the browser from following
+});

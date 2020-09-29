@@ -17,29 +17,35 @@
 /////////////////////////////////////////////////////////////////////
 
 var viewer;
+var gUrn;
 
 function launchViewer(urn) {
   var options = {
     env: 'AutodeskProduction',
     getAccessToken: getForgeToken
   };
+  gUrn = urn;
 
   Autodesk.Viewing.Initializer(options, () => {
     var config3d = {
-      extensions: ['Autodesk.Viewing.MarkupsCore', 'Autodesk.Viewing.MarkupsGui']
+      extensions: ['Autodesk.Viewing.MarkupsCore', 'Autodesk.Viewing.MarkupsGui', 'ToolbarExtension']
     };
     viewer = new Autodesk.Viewing.GuiViewer3D(document.getElementById('forgeViewer'), config3d);
     viewer.start();
     var documentId = 'urn:' + urn;
     Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
+    replaceSpinner();
   });
 }
 
 function onDocumentLoadSuccess(doc) {
   var viewables = doc.getRoot().getDefaultGeometry();
+  viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, function onGeoLoaded(_x) {
+    viewer.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT, onSelectionChanged);
+  });
+  viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, getRemoteLevels);
   viewer.loadDocumentNode(doc, viewables).then(i => {
     // documented loaded, any action?
-    console.log(viewables)
   });
 }
 
@@ -53,4 +59,48 @@ function getForgeToken(callback) {
       callback(data.access_token, data.expires_in);
     });
   });
+}
+
+function onSelectionChanged(event) {
+  if (event.dbIdArray.length === 1) {
+    viewer.getProperties(event.dbIdArray[0], function (data) {
+      const extId = data.name.match(/\[(.*?)\]/g)[0].slice(1, -1);
+      console.log(data.name, extId);
+
+    })
+  }
+}
+
+async function getRemoteLevels() {
+  try {
+    const aecData = await Autodesk.Viewing.Document.getAecModelData(viewer.model.getDocumentNode());
+    if (!aecData.levels) return null;
+
+    const levels = aecData.levels;
+    levels.sort((a, b) => b.elevation - a.elevation);
+    jQuery.post({
+      url: window.location.protocol + '//' + window.location.hostname +  ':3300/pestimate/report/elevation',
+      contentType: 'application/json',
+      data: JSON.stringify({ 'urn': gUrn, 'elevation': levels }),
+      success: function (res) {
+        console.log(res)
+      },
+      error: function (err) {
+        console.log(err);
+      }
+    });
+    return levels;
+  } catch (error) {
+    console.log(error)
+    return 0;
+  }
+}
+
+function replaceSpinner() {
+  var spinners = document.getElementsByClassName("forge-spinner");
+  if (spinners.length == 0) return;
+  var spinner = spinners[0];
+  spinner.classList.remove("forge-spinner");
+  spinner.classList.add('lds-heart');
+  spinner.innerHTML = '<div></div>';
 }

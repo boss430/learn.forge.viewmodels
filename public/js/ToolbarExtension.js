@@ -31,28 +31,28 @@ ToolbarExtension.prototype.createUI = function () {
     // Button 1
     var button1 = new Autodesk.Viewing.UI.Button('my-view-front-button');
     button1.onClick = function (e) {
-        var instanceTree = viewer.model.getData().instanceTree;
-
-        var allDbIdsStr = Object.keys(instanceTree.nodeAccess.dbIdToIndex);
-
-        console.log( allDbIdsStr.map(function (id) { return parseInt(id) }))
-
+        const id = parseInt($('#obj').val());
+        console.log([id])
+        viewer.isolate([id]);
     };
     button1.addClass('my-view-front-button');
     button1.setToolTip('View front');
 
     // Button 2
-    // var button2 = new Autodesk.Viewing.UI.Button('my-view-back-button');
-    // button2.onClick = function (e) {
-    //     viewer.setViewCube('back');
-    // };
-    // button2.addClass('my-view-back-button');
-    // button2.setToolTip('View Back');
+    var button2 = new Autodesk.Viewing.UI.Button('my-view-back-button');
+    button2.onClick = function (e) {
+        
+        const id = parseInt($('#obj').val());
+        console.log([id])
+        viewer.fitToView([id]);
+    };
+    button2.addClass('my-view-back-button');
+    button2.setToolTip('View Back');
 
     // SubToolbar
     this.subToolbar = new Autodesk.Viewing.UI.ControlGroup('my-custom-view-toolbar');
     this.subToolbar.addControl(button1);
-    // this.subToolbar.addControl(button2);
+    this.subToolbar.addControl(button2);
 
     viewer.toolbar.addControl(this.subToolbar);
 };
