@@ -37,13 +37,26 @@
       <ul class="nav navbar-nav right">
         <li>
           <a>
+            <button id="show">Show tree</button>
+          </a>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav right">
+        <li>
+          <a>
             <input type="text" placeholder="Type me!!" id="obj" />
+          </a>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav right">
+        <li>
+          <a>
+            <button id="markup">click me</button>
           </a>
         </li>
       </ul>
     </div>
   </nav>
-  <button id="show">Show tree</button>
   <a id="download"></a>
   <!-- End of navbar -->
   <div class="container-fluid fill">
@@ -106,6 +119,9 @@
   $("#show").on('click', () => {
     $("#forgeTree").toggle();
     $("#show").toggle();
+  })
+  $("#markup").on('click', ()=>{
+    console.log('Show markup.')
   })
 </script>
 

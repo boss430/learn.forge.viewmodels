@@ -34,10 +34,6 @@ body {
 
 #show {
   display: none;
-  position: fixed;
-  left: 10px;
-  top: 65px;
-  z-index: 1;
 }
 
 .jstree-default-contextmenu {
