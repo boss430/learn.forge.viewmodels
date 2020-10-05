@@ -44,6 +44,8 @@ function onDocumentLoadSuccess(doc) {
     viewer.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT, onSelectionChanged);
   });
   viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, getRemoteLevels);
+  viewer.loadExtension('Autodesk.DocumentBrowser')
+  viewer.loadExtension('Autodesk.LayerManager')
   viewer.loadDocumentNode(doc, viewables).then(i => {
     // documented loaded, any action?
   });
