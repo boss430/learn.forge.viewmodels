@@ -109,26 +109,30 @@ function prepareAppBucketTree() {
     $('#appBuckets').jstree('open_all');
   }).bind("activate_node.jstree", function (evt, data) {
     if (data != null && data.node != null && data.node.type == 'object') {
-      $("#forgeViewer").empty();
-      var urn = data.node.id;
-      getForgeToken(function (access_token) {
-        jQuery.ajax({
-          url: 'https://developer.api.autodesk.com/modelderivative/v2/designdata/' + urn + '/manifest',
-          headers: { 'Authorization': 'Bearer ' + access_token },
-          success: function (res) {
-            if (res.progress === 'success' || res.progress === 'complete') launchViewer(urn);
-            else $("#forgeViewer").html('The translation job still running: ' + res.progress + '. Please try again in a moment.');
-          },
-          error: function (err) {
-            var msgButton = 'This file is not translated yet! ' +
-              '<button class="btn btn-xs btn-info" onclick="translateObject()"><span class="glyphicon glyphicon-eye-open"></span> ' +
-              'Start translation</button>'
-            $("#forgeViewer").html(msgButton);
-          }
-        });
-      })
+      viewModel(data.node.id);
     }
   });
+}
+
+function viewModel(urn) {
+  $("#forgeViewer").empty();
+  getForgeToken(function (access_token) {
+    jQuery.ajax({
+      url: 'https://developer.api.autodesk.com/modelderivative/v2/designdata/' + urn + '/manifest',
+      headers: { 'Authorization': 'Bearer ' + access_token },
+      success: function (res) {
+        if (res.progress === 'success' || res.progress === 'complete') launchViewer(urn);
+        else $("#forgeViewer").html(`The translation job still running: ${res.progress}. Please try again in a moment.
+                                    <button class="btn btn-xs btn-info" onclick="viewModel('${urn}')">Refresh</button>`);
+      },
+      error: function (err) {
+        var msgButton = 'This file is not translated yet! ' +
+          '<button class="btn btn-xs btn-info" onclick="translateObject()">Start translation</button>' + ' Or ' +
+          '<button class="btn btn-xs btn-info" onclick="translateObjectAsZip()">Start translation as zip</button>';
+        $("#forgeViewer").html(msgButton);
+      }
+    });
+  })
 }
 
 function autodeskCustomMenu(autodeskNode) {
@@ -161,6 +165,14 @@ function autodeskCustomMenu(autodeskNode) {
           action: function () {
             var treeNode = $('#appBuckets').jstree(true).get_selected(true)[0];
             translateObject(treeNode);
+          },
+          icon: 'glyphicon glyphicon-eye-open'
+        },
+        translateFileAsZip: {
+          label: "Translate as Zip",
+          action: function () {
+            var treeNode = $('#appBuckets').jstree(true).get_selected(true)[0];
+            translateObjectAsZip(treeNode);
           },
           icon: 'glyphicon glyphicon-eye-open'
         },
@@ -211,23 +223,9 @@ function translateObject(node) {
   $("#forgeViewer").empty();
   if (node == null) node = $('#appBuckets').jstree(true).get_selected(true)[0];
   var bucketKey = node.parents[0];
-  var objectKey = node.id;
+  var objectName = node.id;
   jQuery.post({
-    url: '/api/forge/modelderivative/jobs',
-    contentType: 'application/json',
-    data: JSON.stringify({ 'bucketKey': bucketKey, 'fileName': objectKey }),
-    success: function (res) {
-      $("#forgeViewer").html('Translation started! Please try again in a moment.');
-    },
-  });
-}
-
-function deleteObject(node) {
-  $("#forgeViewer").empty();
-  var bucketKey = node.parents[0];
-  var objectName = node.text;
-  jQuery.post({
-    url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/deleteObjects',
+    url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/derivative/jobs',
     contentType: 'application/json',
     data: JSON.stringify({ 'bucketKey': bucketKey, 'fileName': objectName }),
     success: () => {
@@ -236,17 +234,57 @@ function deleteObject(node) {
   })
 }
 
-function deleteBucket(node) {
+function translateObjectAsZip(node) {
   $("#forgeViewer").empty();
-  var bucketKey = node.id;
-  jQuery.post({
-    url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/deleteBuckets',
-    contentType: 'application/json',
-    data: JSON.stringify({ 'bucketKey': bucketKey }),
-    success: () => {
-      $('#appBuckets').jstree(true).refresh();
-    }
-  })
+  if (node == null) node = $('#appBuckets').jstree(true).get_selected(true)[0];
+  var objectName = node.id;
+  var rootFilename = prompt("Please enter your root filename?\n(with file extension!!)");
+  if (rootFilename !== null) {
+    jQuery.post({
+      url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/derivative/zipJobs',
+      contentType: 'application/json',
+      data: JSON.stringify({ 'fileName': objectName, 'rootFilename': rootFilename.trim() }),
+      success: () => {
+        $('#appBuckets').jstree(true).refresh();
+      }
+    })
+  }
+}
+
+function deleteObject(node) {
+  if (deletePrompt()) {
+    $("#forgeViewer").empty();
+    var bucketKey = node.parents[0];
+    var objectName = node.text;
+    jQuery.post({
+      url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/deleteObjects',
+      contentType: 'application/json',
+      data: JSON.stringify({ 'bucketKey': bucketKey, 'fileName': objectName }),
+      success: () => {
+        $('#appBuckets').jstree(true).refresh();
+      }
+    })
+  }
+}
+
+function deleteBucket(node) {
+  if (deletePrompt()) {
+    $("#forgeViewer").empty();
+    var bucketKey = node.id;
+    jQuery.post({
+      url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/deleteBuckets',
+      contentType: 'application/json',
+      data: JSON.stringify({ 'bucketKey': bucketKey }),
+      success: () => {
+        $('#appBuckets').jstree(true).refresh();
+      }
+    })
+  }
+}
+
+function deletePrompt(txt = 'Are you sure?') {
+  var answer = confirm(txt);
+  return answer
 }
 
 function extractObject(node) {
@@ -285,6 +323,6 @@ function downloadObject(node) {
   link.click();
 }
 
-$('#download').click(function(e) {
+$('#download').click(function (e) {
   e.preventDefault();  //stop the browser from following
 });

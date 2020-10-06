@@ -68,7 +68,6 @@ function onSelectionChanged(event) {
     viewer.getProperties(event.dbIdArray[0], function (data) {
       const extId = data.name.match(/\[(.*?)\]/g)[0].slice(1, -1);
       console.log(data.name, extId);
-
     })
   }
 }
@@ -81,7 +80,7 @@ async function getRemoteLevels() {
     const levels = aecData.levels;
     levels.sort((a, b) => b.elevation - a.elevation);
     jQuery.post({
-      url: window.location.protocol + '//' + window.location.hostname +  ':3300/pestimate/report/elevation',
+      url: window.location.protocol + '//' + window.location.hostname + ':3300/pestimate/report/elevation',
       contentType: 'application/json',
       data: JSON.stringify({ 'urn': gUrn, 'elevation': levels }),
       success: function (res) {
@@ -105,4 +104,14 @@ function replaceSpinner() {
   spinner.classList.remove("forge-spinner");
   spinner.classList.add('lds-heart');
   spinner.innerHTML = '<div></div>';
+}
+
+function focusElement(id) {
+  if (id !== '' || !id) {
+    id = parseInt(id)
+    viewer.select(parseInt(id));
+    viewer.fitToView([id]);
+  } else {
+    viewer.fitToView();
+  }
 }

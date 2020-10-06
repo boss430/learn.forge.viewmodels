@@ -44,14 +44,9 @@
       <ul class="nav navbar-nav right">
         <li>
           <a>
-            <input type="text" placeholder="Type me!!" id="obj" />
-          </a>
-        </li>
-      </ul>
-      <ul class="nav navbar-nav right">
-        <li>
-          <a>
-            <button id="markup">click me</button>
+            <form id="findObj">
+              <input type="text" placeholder="Find object by id" id="obj" />
+            </form>
           </a>
         </li>
       </ul>
@@ -120,8 +115,12 @@
     $("#forgeTree").toggle();
     $("#show").toggle();
   })
-  $("#markup").on('click', ()=>{
-    console.log('Show markup.')
+
+  $('#findObj').on('submit', (e)=>{
+    e.preventDefault();
+    let id = $('#obj').val();
+    console.log('Show object:', id)
+    focusElement(id);
   })
 </script>
 
