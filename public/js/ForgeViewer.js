@@ -67,7 +67,7 @@ function onSelectionChanged(event) {
   if (event.dbIdArray.length === 1) {
     viewer.getProperties(event.dbIdArray[0], function (data) {
       const extId = data.name.match(/\[(.*?)\]/g)[0].slice(1, -1);
-      console.log(data.name, extId);
+      console.log(`Actual name: ${data.name}\nExternal id: ${extId}\ndbId: ${data.dbId}`);
     })
   }
 }
