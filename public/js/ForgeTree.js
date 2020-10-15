@@ -60,20 +60,24 @@ $(document).ready(function () {
 function createNewBucket() {
   var bucketKey = $('#newBucketKey').val();
   var policyKey = $('#newBucketPolicyKey').val();
-  jQuery.post({
-    url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/buckets',
-    contentType: 'application/json',
-    data: JSON.stringify({ 'bucketKey': bucketKey, 'policyKey': policyKey }),
-    success: function (res) {
-      $('#appBuckets').jstree(true).refresh();
-      $('#createBucketModal').modal('toggle');
-    },
-    error: function (err) {
-      if (err.status == 409)
-        alert('Bucket already exists - 409: Duplicated')
-      console.log(err);
-    }
-  });
+  if (!RegExp('([A-Z])').test(bucketKey)) {
+    jQuery.post({
+      url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/buckets',
+      contentType: 'application/json',
+      data: JSON.stringify({ 'bucketKey': bucketKey, 'policyKey': policyKey }),
+      success: function (res) {
+        $('#appBuckets').jstree(true).refresh();
+        $('#createBucketModal').modal('toggle');
+      },
+      error: function (err) {
+        if (err.status == 409)
+          alert('Bucket already exists - 409: Duplicated')
+        console.log(err);
+      }
+    });
+  } else {
+    alert('Uppercase is prohibit!!');
+  }
 }
 
 function prepareAppBucketTree() {
@@ -107,11 +111,23 @@ function prepareAppBucketTree() {
     contextmenu: { items: autodeskCustomMenu }
   }).on('loaded.jstree', function () {
     $('#appBuckets').jstree('open_all');
-  }).bind("activate_node.jstree", function (evt, data) {
-    if (data != null && data.node != null && data.node.type == 'object') {
-      viewModel(data.node.id);
-    }
-  });
+  }).bind("activate_node.jstree",
+    debounce(function (evt, data) {
+      if (data != null && data.node != null && data.node.type == 'object') {
+        viewModel(data.node.id);
+      }
+    }, 1000)
+  );
+}
+
+const debounce = (func, delay) => {
+  let inDebounce
+  return function() {
+    const context = this
+    const args = arguments
+    clearTimeout(inDebounce)
+    inDebounce = setTimeout(() => func.apply(context, args), delay)
+  }
 }
 
 function viewModel(urn) {
@@ -238,7 +254,7 @@ function translateObjectAsZip(node) {
   $("#forgeViewer").empty();
   if (node == null) node = $('#appBuckets').jstree(true).get_selected(true)[0];
   var objectName = node.id;
-  var rootFilename = prompt("Please enter your root filename?\n(with file extension!!)");
+  var rootFilename = prompt("Please enter your root filename?\n(with file extension!! e.g. Main.dwg, AR.rvt etc.)");
   if (rootFilename !== null) {
     jQuery.post({
       url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/derivative/zipJobs',

@@ -46,6 +46,7 @@ function onDocumentLoadSuccess(doc) {
   viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, getRemoteLevels);
   viewer.loadExtension('Autodesk.DocumentBrowser')
   viewer.loadExtension('Autodesk.LayerManager')
+  viewer.loadExtension('Autodesk.GoHome')
   viewer.loadDocumentNode(doc, viewables).then(i => {
     // documented loaded, any action?
   });
@@ -107,11 +108,15 @@ function replaceSpinner() {
 }
 
 function focusElement(id) {
-  if (id !== '' || !id) {
+  if (id !== '' || !!id) {
     id = parseInt(id)
     viewer.select(parseInt(id));
+    viewer.isolate([parseInt(id)])
     viewer.fitToView([id]);
   } else {
-    viewer.fitToView();
+    console.log('Home')
+    viewer.getExtension('Autodesk.GoHome').activate();
+    viewer.showAll();
+    viewer.clearSelection();
   }
 }
