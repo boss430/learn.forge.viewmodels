@@ -21,10 +21,10 @@ const express = require('express');
 
 const PORT = process.env.PORT || 5050;
 const config = require('./config');
-if (config.credentials.client_id == null || config.credentials.client_secret == null) {
-    console.error('Missing FORGE_CLIENT_ID or FORGE_CLIENT_SECRET env. variables.');
-    return;
-}
+// if (config.credentials.client_id == null || config.credentials.client_secret == null) {
+//     console.error('Missing FORGE_CLIENT_ID or FORGE_CLIENT_SECRET env. variables.');
+//     return;
+// }
 
 process.on('unhandledRejection', (reason, p) => {
     console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);

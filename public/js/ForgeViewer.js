@@ -32,6 +32,8 @@ function launchViewer(urn) {
     viewer.start();
     var documentId = 'urn:' + urn;
     Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
+    viewer.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT, onSelectionChanged);
+    viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, () => { $("#toolbar-propertiesTool").click() })
   });
 }
 
@@ -40,6 +42,23 @@ function onDocumentLoadSuccess(doc) {
   viewer.loadDocumentNode(doc, viewables).then(i => {
     // documented loaded, any action?
     console.log(viewables)
+    viewer.loadExtension('IconMarkupExtension', {
+      button: {
+        icon: 'fa-thermometer-half',
+        tooltip: 'Show Temperature'
+      },
+      icons: [
+        { dbId: 2215, label: '300&#176;C', css: 'temperatureBorder temperatureHigh fas fa-thermometer-full' },
+      ],
+      onClick: (id) => {
+        viewers.select(id);
+        viewers.utilities.fitToView();
+        switch (id) {
+          case 563:
+            alert('Sensor offline');
+        }
+      }
+    })
   });
 }
 
@@ -53,4 +72,17 @@ function getForgeToken(callback) {
       callback(data.access_token, data.expires_in);
     });
   });
+}
+
+function onSelectionChanged(event) {
+  if (event.dbIdArray.length === 1) {
+    viewer.getProperties(event.dbIdArray[0], function (data) {
+      console.log(data.name)
+      // if (data.name.startsWith("Solid")) {
+      //     var instanceTree = viewer.model.getData().instanceTree;
+      //     var parentId = instanceTree.getNodeParentId(event.dbIdArray[0])
+      //     viewer.select([parentId]);
+      // }
+    })
+  }
 }

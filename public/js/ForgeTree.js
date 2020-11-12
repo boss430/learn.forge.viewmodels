@@ -172,6 +172,14 @@ function autodeskCustomMenu(autodeskNode) {
           },
           icon: 'glyphicon glyphicon-info-sign'
         },
+        downloadFile: {
+          label: "Download",
+          action: () => {
+            var treeNode = $('#appBuckets').jstree(true).get_selected(true)[0];
+            downloadObject(treeNode);
+          },
+          icon: 'glyphicon glyphicon glyphicon-download-alt'
+        },
         deleteFile: {
           label: "Delete",
           action: () => {
@@ -231,4 +239,13 @@ function deleteBucket(node) {
       $('#appBuckets').jstree(true).refresh();
     }
   })
+}
+
+function downloadObject(node) {
+  var objectKey = node.id;
+  var link = document.createElement('a');
+  link.href = window.location.protocol + '//' + window.location.hostname + `:3300/forge/oss/download?urn=${objectKey}`;
+  link.id = 'download'
+  link.download = ''
+  link.click();
 }

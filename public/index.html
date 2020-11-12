@@ -15,12 +15,15 @@
   <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css"
     type="text/css">
   <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
+  <script src="https://use.fontawesome.com/releases/v5.15.1/js/all.js" data-auto-replace-svg="nest"></script>
   <!-- this project files -->
   <link href="css/main.css" rel="stylesheet" />
   <script src="js/ForgeTree.js"></script>
   <script src="js/ForgeViewer.js"></script>
   <script src="js/ToolbarExtension.js"></script>
-  <script src="js/NewExtension.js"></script>
+  <!-- <script src="js/NewExtension.js"></script> -->
+  <!-- <script src="js/iconExtension.js"></script> -->
+  <script src="js/iconMarkupExtension.js"></script>
 </head>
 
 <body>
@@ -99,6 +102,11 @@
     $("#forgeTree").toggle();
     $("#show").toggle();
   })
+  $(document).ready(() => {
+    let urn = 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dXF5N2M5azdndGRoZ3dhcHpiaTd1b2Ztd295bDc2d24tNWZhOTA2MzZmZDBjZmU3NDg0ODNjZDlhL0hvbWUlMjUyMEEyLmR3Zw==';
+    // let urn = 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6Y2hvdC9IT1VTRV9QSVBFLnppcA=='; //pipe
+    launchViewer(urn);
+  });
 </script>
 
 </html>

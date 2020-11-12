@@ -18,7 +18,7 @@
 
 const fs = require('fs');
 const express = require('express');
-const multer  = require('multer');
+const multer = require('multer');
 const { BucketsApi, ObjectsApi, PostBucketsPayload } = require('forge-apis');
 
 const { getClient, getInternalToken } = require('./common/oauth');
@@ -52,14 +52,15 @@ router.get('/buckets', async (req, res, next) => {
                     children: true
                 };
             }));
-        } catch(err) {
+        } catch (err) {
             next(err);
         }
     } else {
         try {
             // Retrieve up to 100 objects from Forge using the [ObjectsApi](https://github.com/Autodesk-Forge/forge-api-nodejs-client/blob/master/docs/ObjectsApi.md#getObjects)
             // Note: if there's more objects in the bucket, you should call the getObjects method in a loop, providing different 'startAt' params
-            const objects = await new ObjectsApi().getObjects(bucket_name, { limit: 100 }, req.oauth_client, req.oauth_token);
+            const bucket_key = config.credentials.client_id.toLowerCase() + '-' + bucket_name;
+            const objects = await new ObjectsApi().getObjects(bucket_key, { limit: 100 }, req.oauth_client, req.oauth_token);
             res.json(objects.body.items.map((object) => {
                 return {
                     id: Buffer.from(object.objectId).toString('base64'),
@@ -68,7 +69,7 @@ router.get('/buckets', async (req, res, next) => {
                     children: false
                 };
             }));
-        } catch(err) {
+        } catch (err) {
             next(err);
         }
     }
@@ -84,7 +85,7 @@ router.post('/buckets', async (req, res, next) => {
         // Create a bucket using [BucketsApi](https://github.com/Autodesk-Forge/forge-api-nodejs-client/blob/master/docs/BucketsApi.md#createBucket).
         await new BucketsApi().createBucket(payload, {}, req.oauth_client, req.oauth_token);
         res.status(200).end();
-    } catch(err) {
+    } catch (err) {
         next(err);
     }
 });
@@ -101,7 +102,7 @@ router.post('/objects', multer({ dest: 'uploads/' }).single('fileToUpload'), asy
             // Upload an object to bucket using [ObjectsApi](https://github.com/Autodesk-Forge/forge-api-nodejs-client/blob/master/docs/ObjectsApi.md#uploadObject).
             await new ObjectsApi().uploadObject(req.body.bucketKey, req.file.originalname, data.length, data, {}, req.oauth_client, req.oauth_token);
             res.status(200).end();
-        } catch(err) {
+        } catch (err) {
             next(err);
         }
     });
@@ -111,7 +112,7 @@ router.post('/deleteObjects', async (req, res, next) => {
     try {
         await new ObjectsApi().deleteObject(req.body.bucketKey, req.body.objectName, req.oauth_client, req.oauth_token);
         res.status(200).end();
-    } catch(err) {
+    } catch (err) {
         next(err);
     }
 });
@@ -120,7 +121,7 @@ router.post('/deleteBuckets', async (req, res, next) => {
     try {
         await new BucketsApi().deleteBucket(req.body.bucketKey, req.oauth_client, req.oauth_token);
         res.status(200).end();
-    } catch(err) {
+    } catch (err) {
         console.log('oss error')
         next(err);
     }
