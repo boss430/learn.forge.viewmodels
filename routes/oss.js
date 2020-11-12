@@ -80,7 +80,8 @@ router.get('/buckets', async (req, res, next) => {
 router.post('/buckets', async (req, res, next) => {
     let payload = new PostBucketsPayload();
     payload.bucketKey = config.credentials.client_id.toLowerCase() + '-' + req.body.bucketKey;
-    payload.policyKey = 'temporary'; // expires in 24h
+    // payload.bucketKey = req.body.bucketKey;
+    payload.policyKey = 'temporary'; // expires in 30d
     try {
         // Create a bucket using [BucketsApi](https://github.com/Autodesk-Forge/forge-api-nodejs-client/blob/master/docs/BucketsApi.md#createBucket).
         await new BucketsApi().createBucket(payload, {}, req.oauth_client, req.oauth_token);
@@ -126,5 +127,30 @@ router.post('/deleteBuckets', async (req, res, next) => {
         next(err);
     }
 });
+
+router.get('/download', async (req, res) => {
+    try {
+        const decode = Buffer.from(req.query.urn.toString(), 'base64').toString();
+        const data = decode.split(':');
+        const path = data[data.length - 1].split('/');
+        const fileName = decodeURIComponent(path[1]);
+        const detail = await new ObjectsApi().getObject(path[0], fileName, {}, req.oauth_client, req.oauth_token);
+        try {
+            console.log(fileName)
+            fs.writeFileSync(`downloads/${fileName}`, detail.body)
+            res.download(`downloads/${fileName}`, (err)=>{
+                if(err) console.log(err);
+                fs.unlinkSync(`downloads/${fileName}`);
+            });
+        }
+        catch (err) {
+            console.log(err)
+            res.sendStatus(403);
+        }
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(500);
+    }
+})
 
 module.exports = router;

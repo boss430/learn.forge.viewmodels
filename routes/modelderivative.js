@@ -42,7 +42,7 @@ router.use(async (req, res, next) => {
 router.post('/jobs', async (req, res, next) => {
     let job = new JobPayload();
     job.input = new JobPayloadInput();
-    job.input.urn = req.body.objectName;
+    job.input.urn = req.body.fileName;
     job.output = new JobPayloadOutput([
         new JobSvfOutputPayload()
     ]);

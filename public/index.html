@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Autodesk Forge Tutorial</title>
+  <title>ThinkBimViewer</title>
   <meta charset="utf-8" />
   <link rel="shortcut icon" href="https://github.com/Autodesk-Forge/learn.forge.viewmodels/raw/master/img/favicon.ico">
   <!-- Common packages: jQuery, Bootstrap, jsTree -->
@@ -33,13 +33,30 @@
       <ul class="nav navbar-nav left">
         <li>
           <a style="padding: 5px;">
-            <img src="img/logo.png" height="45"></img>
+            <!-- <img src="img/logo.png" height="45"></img> -->
+            <p style="font-weight: bold; color: lightskyblue; background-color: darkblue;">ThinkBimViewer</p>
+          </a>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav right">
+        <li>
+          <a>
+            <button id="show">Show tree</button>
+          </a>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav right">
+        <li>
+          <a>
+            <form id="findObj">
+              <input type="text" placeholder="Find object by id" id="obj" />
+            </form>
           </a>
         </li>
       </ul>
     </div>
   </nav>
-  <button id="show">Show tree</button>
+  <a id="download"></a>
   <!-- End of navbar -->
   <div class="container-fluid fill">
     <div class="row fill">
@@ -107,6 +124,84 @@
     // let urn = 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6Y2hvdC9IT1VTRV9QSVBFLnppcA=='; //pipe
     launchViewer(urn);
   });
+
+  $('#findObj').on('submit', (e) => {
+    e.preventDefault();
+    let id = $('#obj').val();
+    console.log('Show object:', id)
+    focusElement(id);
+  })
+
+  function saveSvg(name) {
+    if (!name) return "name is require!!"
+    markup = viewer.getExtension("Autodesk.Viewing.MarkupsCore");
+    var svg = markup.generateData()
+    $.post(`${window.location.protocol}//${window.location.hostname}:3300/pestimate/markup/svg`,
+      {
+        name: name,
+        svg: svg
+      }).done((_data) => {
+        console.log("Save done!!")
+        return true;
+      }).fail((_data) => {
+        console.log("Save fail!!")
+        return false;
+      })
+  }
+
+  function loadSvg(name) {
+    if (!name) return "name is require!!"
+    $.get(`${window.location.protocol}//${window.location.hostname}:3300/pestimate/markup/svg`,
+      {
+        name: name
+      },
+      (data) => {
+        markup = viewer.getExtension("Autodesk.Viewing.MarkupsCore");
+        markup.enterEditMode();
+        markup.leaveEditMode();
+        markup.loadMarkups(data.svg, 'LogoLayer')
+        return true;
+      }).fail((err) => {
+        console.log("fail")
+        return false;
+      })
+  }
+
+  function saveMeasurement(name) {
+    if (!name) return "name is require!!"
+    measuremeantTool = viewer.getExtension('Autodesk.Measure');
+    const measure = measuremeantTool.getMeasurementList().map((ms) => (JSON.stringify(ms)));
+    measuremeantTool.deleteMeasurements();
+    $.post(`${window.location.protocol}//${window.location.hostname}:3300/pestimate/markup/measure`,
+      {
+        name: name,
+        measure: measure
+      }).done((_data) => {
+        console.log("Save done!!")
+        measuremeantTool.exitMeasurementMode()
+        return true;
+      }).fail((_data) => {
+        console.log("Save fail")
+        return false;
+      })
+  }
+
+  function loadMeasurement(name) {
+    if (!name) return "name is require!!";
+    measuremeantTool = viewer.getExtension('Autodesk.Measure');
+    $.get(`${window.location.protocol}//${window.location.hostname}:3300/pestimate/markup/measure`,
+      {
+        name: name
+      }).then((data) => {
+        const measure = data.map((ms) => (JSON.parse(ms)))
+        measuremeantTool.enterMeasurementMode();
+        measuremeantTool.deleteMeasurements();
+        measuremeantTool.setMeasurements(measure);
+        console.log("Load done!!")
+      }).fail(() => {
+        console.log("Load fail")
+      })
+  }
 </script>
 
 </html>
