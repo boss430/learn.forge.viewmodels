@@ -18,7 +18,7 @@
 
 const fs = require('fs');
 const express = require('express');
-const multer  = require('multer');
+const multer = require('multer');
 const { BucketsApi, ObjectsApi, PostBucketsPayload } = require('forge-apis');
 
 const { getClient, getInternalToken } = require('./common/oauth');
@@ -38,28 +38,37 @@ router.use(async (req, res, next) => {
 // returns a JSON with list of buckets, otherwise returns a JSON with list of objects in bucket with given name.
 router.get('/buckets', async (req, res, next) => {
     const bucket_name = req.query.id;
+
+    //todo get bucketname from db
+    let fixedBucket = 'pbo2';
     if (!bucket_name || bucket_name === '#') {
         try {
             // Retrieve up to 100 buckets from Forge using the [BucketsApi](https://github.com/Autodesk-Forge/forge-api-nodejs-client/blob/master/docs/BucketsApi.md#getBuckets)
             // Note: if there's more buckets, you should call the getBucket method in a loop, providing different 'startAt' params
             const buckets = await new BucketsApi().getBuckets({ limit: 100 }, req.oauth_client, req.oauth_token);
-            res.json(buckets.body.items.map((bucket) => {
-                return {
-                    id: bucket.bucketKey,
-                    // Remove bucket key prefix that was added during bucket creation
-                    text: bucket.bucketKey.replace(config.credentials.client_id.toLowerCase() + '-', ''),
-                    type: 'bucket',
-                    children: true
-                };
-            }));
-        } catch(err) {
-            console.log(err)
+            res.json(buckets.body.items
+                .filter((bucket) => {
+                    return true;
+                    console.log(bucket.bucketKey)
+                    return (bucket.bucketKey === (config.credentials.client_id.toLowerCase() + '-' + bucket_name))
+                })
+                .map((bucket) => {
+                    return {
+                        id: bucket.bucketKey,
+                        // Remove bucket key prefix that was added during bucket creation
+                        text: bucket.bucketKey.replace(config.credentials.client_id.toLowerCase() + '-', ''),
+                        type: 'bucket',
+                        children: true
+                    };
+                }));
+        } catch (err) {
             next(err);
         }
     } else {
         try {
             // Retrieve up to 100 objects from Forge using the [ObjectsApi](https://github.com/Autodesk-Forge/forge-api-nodejs-client/blob/master/docs/ObjectsApi.md#getObjects)
             // Note: if there's more objects in the bucket, you should call the getObjects method in a loop, providing different 'startAt' params
+            const bucket_key = config.credentials.client_id.toLowerCase() + '-' + bucket_name;
             const objects = await new ObjectsApi().getObjects(bucket_name, { limit: 100 }, req.oauth_client, req.oauth_token);
             res.json(objects.body.items.map((object) => {
                 return {
@@ -69,7 +78,7 @@ router.get('/buckets', async (req, res, next) => {
                     children: false
                 };
             }));
-        } catch(err) {
+        } catch (err) {
             next(err);
         }
     }
@@ -86,7 +95,7 @@ router.post('/buckets', async (req, res, next) => {
         // Create a bucket using [BucketsApi](https://github.com/Autodesk-Forge/forge-api-nodejs-client/blob/master/docs/BucketsApi.md#createBucket).
         await new BucketsApi().createBucket(payload, {}, req.oauth_client, req.oauth_token);
         res.status(200).end();
-    } catch(err) {
+    } catch (err) {
         next(err);
     }
 });
@@ -103,7 +112,7 @@ router.post('/objects', multer({ dest: 'uploads/' }).single('fileToUpload'), asy
             // Upload an object to bucket using [ObjectsApi](https://github.com/Autodesk-Forge/forge-api-nodejs-client/blob/master/docs/ObjectsApi.md#uploadObject).
             await new ObjectsApi().uploadObject(req.body.bucketKey, req.file.originalname, data.length, data, {}, req.oauth_client, req.oauth_token);
             res.status(200).end();
-        } catch(err) {
+        } catch (err) {
             next(err);
         }
     });
@@ -113,7 +122,7 @@ router.post('/deleteObjects', async (req, res, next) => {
     try {
         await new ObjectsApi().deleteObject(req.body.bucketKey, req.body.objectName, req.oauth_client, req.oauth_token);
         res.status(200).end();
-    } catch(err) {
+    } catch (err) {
         next(err);
     }
 });
@@ -122,7 +131,7 @@ router.post('/deleteBuckets', async (req, res, next) => {
     try {
         await new BucketsApi().deleteBucket(req.body.bucketKey, req.oauth_client, req.oauth_token);
         res.status(200).end();
-    } catch(err) {
+    } catch (err) {
         console.log('oss error')
         next(err);
     }
@@ -138,8 +147,8 @@ router.get('/download', async (req, res) => {
         try {
             console.log(fileName)
             fs.writeFileSync(`downloads/${fileName}`, detail.body)
-            res.download(`downloads/${fileName}`, (err)=>{
-                if(err) console.log(err);
+            res.download(`downloads/${fileName}`, (err) => {
+                if (err) console.log(err);
                 fs.unlinkSync(`downloads/${fileName}`);
             });
         }

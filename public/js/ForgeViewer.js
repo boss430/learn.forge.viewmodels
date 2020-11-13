@@ -34,7 +34,8 @@ function launchViewer(urn) {
     viewer.start();
     var documentId = 'urn:' + urn;
     Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
-    replaceSpinner();
+    viewer.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT, onSelectionChanged);
+    viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, () => { $("#toolbar-propertiesTool").click() })
   });
 }
 
@@ -49,6 +50,24 @@ function onDocumentLoadSuccess(doc) {
   viewer.loadExtension('Autodesk.GoHome')
   viewer.loadDocumentNode(doc, viewables).then(i => {
     // documented loaded, any action?
+    console.log(viewables)
+    viewer.loadExtension('IconMarkupExtension', {
+      button: {
+        icon: 'fa-thermometer-half',
+        tooltip: 'Show Temperature'
+      },
+      icons: [
+        { dbId: 4515, label: '300&#176;C', css: 'temperatureBorder temperatureHigh fas fa-thermometer-full' },
+      ],
+      onClick: (id) => {
+        viewers.select(id);
+        viewers.utilities.fitToView();
+        switch (id) {
+          case 563:
+            alert('Sensor offline');
+        }
+      }
+    })
   });
   Autodesk.Viewing.Document.getAecModelData(doc.getRoot());
 }
@@ -83,14 +102,14 @@ async function getRemoteLevels() {
     const levels = aecData.levels;
     levels.sort((a, b) => b.elevation - a.elevation);
     jQuery.post({
-      url: window.location.protocol + '//' + window.location.hostname + ':3300/pestimate/report/elevation',
+      url: 'api/pestimate/report/elevation',
       contentType: 'application/json',
       data: JSON.stringify({ 'urn': gUrn, 'elevation': levels }),
       success: function (res) {
         console.log(res)
       },
       error: function (err) {
-        console.log(err);
+        // console.log(err);
       }
     });
     return levels;
