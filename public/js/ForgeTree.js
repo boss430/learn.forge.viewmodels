@@ -89,7 +89,7 @@ function prepareAppBucketTree() {
         "dataType": "json",
         'multiple': false,
         "data": function (node) {
-          return { "id": node.id };
+          return { "id": node.text };
         }
       }
     },
