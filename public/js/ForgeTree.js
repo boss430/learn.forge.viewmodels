@@ -62,7 +62,7 @@ function createNewBucket() {
   var policyKey = $('#newBucketPolicyKey').val();
   if (!RegExp('([A-Z])').test(bucketKey)) {
     jQuery.post({
-      url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/buckets',
+      url: 'api/forge/oss/buckets',
       contentType: 'application/json',
       data: JSON.stringify({ 'bucketKey': bucketKey, 'policyKey': policyKey }),
       success: function (res) {
@@ -85,7 +85,7 @@ function prepareAppBucketTree() {
     'core': {
       'themes': { "icons": true },
       'data': {
-        "url": window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/buckets',
+        "url": '/api/forge/oss/buckets',
         "dataType": "json",
         'multiple': false,
         "data": function (node) {
@@ -122,7 +122,7 @@ function prepareAppBucketTree() {
 
 const debounce = (func, delay) => {
   let inDebounce
-  return function() {
+  return function () {
     const context = this
     const args = arguments
     clearTimeout(inDebounce)
@@ -241,7 +241,7 @@ function translateObject(node) {
   var bucketKey = node.parents[0];
   var objectName = node.id;
   jQuery.post({
-    url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/derivative/jobs',
+    url: 'api/forge/derivative/jobs',
     contentType: 'application/json',
     data: JSON.stringify({ 'bucketKey': bucketKey, 'fileName': objectName }),
     success: () => {
@@ -257,7 +257,7 @@ function translateObjectAsZip(node) {
   var rootFilename = prompt("Please enter your root filename?\n(with file extension!! e.g. Main.dwg, AR.rvt etc.)");
   if (rootFilename !== null) {
     jQuery.post({
-      url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/derivative/zipJobs',
+      url: 'api/forge/derivative/zipJobs',
       contentType: 'application/json',
       data: JSON.stringify({ 'fileName': objectName, 'rootFilename': rootFilename.trim() }),
       success: () => {
@@ -273,7 +273,7 @@ function deleteObject(node) {
     var bucketKey = node.parents[0];
     var objectName = node.text;
     jQuery.post({
-      url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/deleteObjects',
+      url: 'api/forge/oss/deleteObjects',
       contentType: 'application/json',
       data: JSON.stringify({ 'bucketKey': bucketKey, 'fileName': objectName }),
       success: () => {
@@ -288,7 +288,7 @@ function deleteBucket(node) {
     $("#forgeViewer").empty();
     var bucketKey = node.id;
     jQuery.post({
-      url: window.location.protocol + '//' + window.location.hostname + ':3300/forge/oss/deleteBuckets',
+      url: 'api/forge/oss/deleteBuckets',
       contentType: 'application/json',
       data: JSON.stringify({ 'bucketKey': bucketKey }),
       success: () => {
@@ -308,7 +308,7 @@ function extractObject(node) {
   if (node == null) node = $('#appBuckets').jstree(true).get_selected(true)[0];
   var objectKey = node.id;
   jQuery.post({
-    url: window.location.protocol + '//' + window.location.hostname + ':3300/pestimate/report/json',
+    url: 'api/pestimate/report/json',
     contentType: 'application/json',
     data: JSON.stringify({ 'urn': objectKey, 'forceGet': "true" }),
     success: function (res) {

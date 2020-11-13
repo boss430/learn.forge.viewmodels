@@ -125,7 +125,6 @@ function IconMarkupExt(viewer, options) {
             fragList.getWorldBounds(fragId, fragbBox);
             nodebBox.union(fragbBox); // create a unifed bounding box
         }
-        console.log(frags, nodebBox)
 
         return nodebBox
     }

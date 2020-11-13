@@ -57,7 +57,7 @@ function onDocumentLoadSuccess(doc) {
         tooltip: 'Show Temperature'
       },
       icons: [
-        { dbId: 2215, label: '300&#176;C', css: 'temperatureBorder temperatureHigh fas fa-thermometer-full' },
+        { dbId: 4515, label: '300&#176;C', css: 'temperatureBorder temperatureHigh fas fa-thermometer-full' },
       ],
       onClick: (id) => {
         viewers.select(id);
@@ -86,15 +86,9 @@ function getForgeToken(callback) {
 function onSelectionChanged(event) {
   if (event.dbIdArray.length === 1) {
     viewer.getProperties(event.dbIdArray[0], function (data) {
-      console.log(data.name)
-      // if (data.name.startsWith("Solid")) {
-      //     var instanceTree = viewer.model.getData().instanceTree;
-      //     var parentId = instanceTree.getNodeParentId(event.dbIdArray[0])
-      //     viewer.select([parentId]);
-      // }
+      const extId = data.name.match(/\[(.*?)\]/g)[0].slice(1, -1);
+      console.log(`Actual name: ${data.name}\nExternal id: ${extId}\ndbId: ${data.dbId}`);
     })
-    const extId = data.name.match(/\[(.*?)\]/g)[0].slice(1, -1);
-    console.log(`Actual name: ${data.name}\nExternal id: ${extId}\ndbId: ${data.dbId}`);
   }
 }
 
@@ -106,14 +100,14 @@ async function getRemoteLevels() {
     const levels = aecData.levels;
     levels.sort((a, b) => b.elevation - a.elevation);
     jQuery.post({
-      url: window.location.protocol + '//' + window.location.hostname + ':3300/pestimate/report/elevation',
+      url: 'api/pestimate/report/elevation',
       contentType: 'application/json',
       data: JSON.stringify({ 'urn': gUrn, 'elevation': levels }),
       success: function (res) {
         console.log(res)
       },
       error: function (err) {
-        console.log(err);
+        // console.log(err);
       }
     });
     return levels;
