@@ -47,6 +47,13 @@
       </ul>
       <ul class="nav navbar-nav right">
         <li>
+          <a id="current">
+            Current Selection: -
+          </a>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav right">
+        <li>
           <a>
             <form id="findObj">
               <input type="text" placeholder="Find object by id" id="obj" />
@@ -203,6 +210,37 @@
         console.log("Load fail")
       })
   }
+
+  function updateSelection(dbid) {
+    if (dbid !== '' || !!dbid) {
+      $('#current').html(`Current Selection: ${dbid}`)
+    } else {
+      $('#current').html(`Current Selection: -`)
+    }
+  }
+
+  function createPesTextMark(typename, layer, color, co_x, co_y, data) {
+    var markup = viewer.getExtension("Autodesk.Viewing.MarkupsCore");
+    let MarkupsCore = Autodesk.Viewing.Extensions.Markups.Core;
+    let text = new MarkupsCore.MarkupText(markup.nextId, markup, 3);
+    markup.addMarkup(text);
+    text.setSize({ x: co_x, y: co_y }, 20, 5);
+    text.setText(typename);
+    text.style['font-size'] = 1;
+    text.style['stroke-color'] = color;
+    text.updateStyle(true);
+    text.pesData = data;
+    text.layer = layer;
+  }
+
+  function savePesTextMark() {
+    
+  }
+
+  function loadPesTextMark() {
+
+  }
+
 </script>
 
 </html>

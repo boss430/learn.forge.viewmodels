@@ -28,7 +28,7 @@ function launchViewer(urn) {
 
   Autodesk.Viewing.Initializer(options, () => {
     var config3d = {
-      extensions: ['Autodesk.Viewing.MarkupsCore', 'Autodesk.Viewing.MarkupsGui', 'ToolbarExtension']
+      extensions: ['Autodesk.Viewing.MarkupsCore', 'Autodesk.Viewing.MarkupsGui', 'Autodesk.AEC.LevelsExtension']
     };
     viewer = new Autodesk.Viewing.GuiViewer3D(document.getElementById('forgeViewer'), config3d);
     viewer.start();
@@ -70,6 +70,7 @@ function onDocumentLoadSuccess(doc) {
       }
     })
   });
+  Autodesk.Viewing.Document.getAecModelData(doc.getRoot());
 }
 
 function onDocumentLoadFailure(viewerErrorCode) {
@@ -89,6 +90,7 @@ function onSelectionChanged(event) {
     viewer.getProperties(event.dbIdArray[0], function (data) {
       const extId = data.name.match(/\[(.*?)\]/g)[0].slice(1, -1);
       console.log(`Actual name: ${data.name}\nExternal id: ${extId}\ndbId: ${data.dbId}`);
+      updateSelection(data.dbId);
     })
   }
 }
