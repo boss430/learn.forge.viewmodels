@@ -57,7 +57,8 @@ function onDocumentLoadSuccess(doc) {
         tooltip: 'Show Temperature'
       },
       icons: [
-        { dbId: 4515, label: '300&#176;C', css: 'temperatureBorder temperatureHigh fas fa-thermometer-full' },
+        { dbId: 4515, label: 'CAR', css: 'temperatureBorder temperatureHigh fas fa-thermometer-full' },
+        { dbId: 2215, label: 'Roof', css: 'temperatureBorder temperatureHigh fas fa-thermometer-full' },
       ],
       onClick: (id) => {
         viewers.select(id);

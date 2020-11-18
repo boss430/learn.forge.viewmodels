@@ -81,15 +81,17 @@ function createNewBucket() {
 }
 
 function prepareAppBucketTree() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const user = urlParams.get('user');
   $('#appBuckets').jstree({
     'core': {
       'themes': { "icons": true },
       'data': {
-        "url": '/api/forge/oss/buckets',
+        "url": `/api/forge/oss/buckets`,
         "dataType": "json",
         'multiple': false,
-        "data": function (node) {
-          return { "id": node.id };
+        "data": (node) => {
+          return { "id": node.id, "user": user };
         }
       }
     },

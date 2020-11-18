@@ -36,11 +36,27 @@ router.use(async (req, res, next) => {
 
 // GET /api/forge/oss/buckets - expects a query param 'id'; if the param is '#' or empty,
 // returns a JSON with list of buckets, otherwise returns a JSON with list of objects in bucket with given name.
+const session = [
+    {
+        user: "user1",
+        bucket: ["pbo2", "akiko"]
+    }
+]
+
 router.get('/buckets', async (req, res, next) => {
-    const bucket_name = req.query.id;
+    const user = req.query.user.toString();
+    const bucket_name = req.query.id;//note! its a id.
+    if (!user || user === "") {
+        res.sendStatus(400);
+        return;
+    }
+    const userGrant = session.find((userSession) => (userSession.user === user));
+    if (!userGrant) {
+        res.sendStatus(403);
+        return;
+    }
 
     //todo get bucketname from db
-    let fixedBucket = 'pbo2';
     if (!bucket_name || bucket_name === '#') {
         try {
             // Retrieve up to 100 buckets from Forge using the [BucketsApi](https://github.com/Autodesk-Forge/forge-api-nodejs-client/blob/master/docs/BucketsApi.md#getBuckets)
@@ -48,9 +64,8 @@ router.get('/buckets', async (req, res, next) => {
             const buckets = await new BucketsApi().getBuckets({ limit: 100 }, req.oauth_client, req.oauth_token);
             res.json(buckets.body.items
                 .filter((bucket) => {
-                    return true;
-                    console.log(bucket.bucketKey)
-                    return (bucket.bucketKey === (config.credentials.client_id.toLowerCase() + '-' + bucket_name))
+                    // console.log(bucket.bucketKey)
+                    return (userGrant.bucket.includes(bucket.bucketKey.replace(config.credentials.client_id.toLowerCase() + '-', '')))
                 })
                 .map((bucket) => {
                     return {
@@ -68,7 +83,7 @@ router.get('/buckets', async (req, res, next) => {
         try {
             // Retrieve up to 100 objects from Forge using the [ObjectsApi](https://github.com/Autodesk-Forge/forge-api-nodejs-client/blob/master/docs/ObjectsApi.md#getObjects)
             // Note: if there's more objects in the bucket, you should call the getObjects method in a loop, providing different 'startAt' params
-            const bucket_key = config.credentials.client_id.toLowerCase() + '-' + bucket_name;
+            // const bucket_key = config.credentials.client_id.toLowerCase() + '-' + bucket_name;
             const objects = await new ObjectsApi().getObjects(bucket_name, { limit: 100 }, req.oauth_client, req.oauth_token);
             res.json(objects.body.items.map((object) => {
                 return {
