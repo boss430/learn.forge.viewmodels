@@ -40,6 +40,10 @@ const session = [
     {
         user: "user1",
         bucket: ["pbo2", "akiko"]
+    },
+    {
+        user: "admin",
+        bucket: '*'
     }
 ]
 
@@ -64,8 +68,8 @@ router.get('/buckets', async (req, res, next) => {
             const buckets = await new BucketsApi().getBuckets({ limit: 100 }, req.oauth_client, req.oauth_token);
             res.json(buckets.body.items
                 .filter((bucket) => {
-                    // console.log(bucket.bucketKey)
-                    return (userGrant.bucket.includes(bucket.bucketKey.replace(config.credentials.client_id.toLowerCase() + '-', '')))
+                    if(userGrant.bucket === '*') return true;
+                    else return (userGrant.bucket.includes(bucket.bucketKey.replace(config.credentials.client_id.toLowerCase() + '-', '')))
                 })
                 .map((bucket) => {
                     return {

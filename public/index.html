@@ -11,6 +11,7 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.7/jstree.min.js"></script>
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.7/themes/default/style.min.css" />
+  <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
   <!-- Autodesk Forge Viewer files -->
   <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css"
     type="text/css">
@@ -24,6 +25,8 @@
   <!-- <script src="js/NewExtension.js"></script> -->
   <!-- <script src="js/iconExtension.js"></script> -->
   <script src="js/iconMarkupExtension.js"></script>
+  <script src="js/newedit2d.js"></script>
+  <script src="js/markup.js"></script>
 </head>
 
 <body>
@@ -129,7 +132,7 @@
   $(document).ready(() => {
     let urn = 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dXF5N2M5azdndGRoZ3dhcHpiaTd1b2Ztd295bDc2d24tNWZhOTA2MzZmZDBjZmU3NDg0ODNjZDlhL0hvbWUlMjUyMEEyLmR3Zw==';
     // let urn = 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6Y2hvdC9IT1VTRV9QSVBFLnppcA=='; //pipe
-        urn = 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dXF5N2M5azdndGRoZ3dhcHpiaTd1b2Ztd295bDc2d24tNWZhOTA2MzZmZDBjZmU3NDg0ODNjZDlhL3JhY19iYXNpY19zYW1wbGVfcHJvamVjdC5ydnQ=';
+        // urn = 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dXF5N2M5azdndGRoZ3dhcHpiaTd1b2Ztd295bDc2d24tNWZhOTA2MzZmZDBjZmU3NDg0ODNjZDlhL3JhY19iYXNpY19zYW1wbGVfcHJvamVjdC5ydnQ=';
     launchViewer(urn);
   });
 

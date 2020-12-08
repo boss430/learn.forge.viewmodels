@@ -36,6 +36,7 @@ function launchViewer(urn) {
     Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
     viewer.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT, onSelectionChanged);
     viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, () => { $("#toolbar-propertiesTool").click() })
+    // setupProfile();
   });
 }
 
@@ -43,6 +44,7 @@ function onDocumentLoadSuccess(doc) {
   var viewables = doc.getRoot().getDefaultGeometry();
   viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, function onGeoLoaded(_x) {
     viewer.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT, onSelectionChanged);
+    loadEdit2D();
   });
   viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, getRemoteLevels);
   viewer.loadExtension('Autodesk.DocumentBrowser')
@@ -50,7 +52,7 @@ function onDocumentLoadSuccess(doc) {
   viewer.loadExtension('Autodesk.GoHome')
   viewer.loadDocumentNode(doc, viewables).then(i => {
     // documented loaded, any action?
-    console.log(viewables)
+    // console.log(viewables)
     viewer.loadExtension('IconMarkupExtension', {
       button: {
         icon: 'fa-thermometer-half',
@@ -141,4 +143,33 @@ function focusElement(id) {
     viewer.showAll();
     viewer.clearSelection();
   }
+}
+
+function setupProfile() {
+  const customProfileSettings = {
+    settings: {
+      reverseMouseZoomDir: true, // override existing
+    }
+  };
+  const customProfile = new Autodesk.Viewing.Profile(customProfileSettings);
+  // Updates viewer settings encapsulated witihn a Profile.
+  // This method will also load and unload extensions referenced by the Profile.
+  viewer.setProfile(customProfile);
+}
+
+function printFile() {
+  viewer.getScreenShot(
+    undefined
+    , undefined
+    , img => createPDF(img))
+}
+
+function createPDF(imgData) {
+  var doc = new jspdf.jsPDF({
+    orientation: 'landscape'
+  })
+  doc.setFontSize(40)
+  doc.text(35, 25, 'ForgeViewer PDF report');
+  doc.addImage(imgData, 'JPEG', 10, 40);
+  doc.save('report-floor1.pdf')
 }
