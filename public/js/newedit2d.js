@@ -25,6 +25,10 @@ async function loadEdit2D() {
     snapper: ctx.snapper// {Edit2DSnapper} Edit2D snapper
   };
   edit2dTools = edit2d.defaultTools;
+  setupProfile();
+  setupShapeRule();
+  setupTextLabel();
+  console.log('Setup Edit2D done!!')
 }
 
 function getAllShapes(onlyPoints = false) {
@@ -165,20 +169,19 @@ function saveMark() {
 
 }
 
-function setUpTextLabel(text) {
+function setupTextLabel(text) {
   let myCircle = createMyCircle(text);
   edit2dTools.insertSymbolTool.symbol = myCircle;
-  edit2dTools.insertSymbolTool.addEventListener("symbolInserted", (e) => {
-    let label = new Autodesk.Edit2D.ShapeLabel(e.symbol, edit2dContext.layer);
-    label.setText(text)
-  })
 }
 
-function createMyCircle(text = "Test") {
+function createMyCircle(text) {
   class MyCircle extends Autodesk.Edit2D.Circle {
     constructor(text) {
-      super(0, 0, 0);
-      this.text = text
+      super(0, 0, 0.1,
+        new Autodesk.Edit2D.Style({
+          lineWidth: 0.0000001,
+        }));
+      this.text = text || "default";
     }
 
     isPolyline() {
@@ -186,9 +189,56 @@ function createMyCircle(text = "Test") {
     }
 
     clone() {
-      return new MyCircle(this.text);
+      return new MyCircle().copy(this);
+    }
+
+    copy(from) {
+      super.copy(from);
+      this.polygon = from.polygon.clone();
+      this.centerX = from.centerX;
+      this.centerY = from.centerY;
+      this.radius = from.radius;
+      this.tessSegments = from.tessSegments;
+      this.modified();
+      return this;
+    }
+
+    setRadius(radius) {
+      this.radius = radius;
+      this.modified();
+      this.needsUpdate = true;
+      return this;
     }
   }
 
   return new MyCircle(text);
+}
+
+function setupShapeRule() {
+  function shapeText(shape) {
+    return shape.text;
+  }
+  class LabelFilter {
+    constructor() { }
+    accepts(_shape, _text, _layer) { return true }
+  }
+  class LabelStyleRule {
+
+    constructor() { }
+
+    // Note: Labels may be reused for different shapes. So, make sure that the style parameters are 
+    //       not just modified for some subset of shapes, but reset for others.
+    apply(label, shape, layer) {
+      label.container.style.top = "-20px";
+      switch (shape.constructor.name) {
+        case "MyCircle":
+          break;
+
+        default:
+          break;
+      }
+    }
+  };
+  return new Autodesk.Edit2D.ShapeLabelRule(edit2dContext.layer, shapeText,
+    new LabelFilter(), new LabelStyleRule());
 }
