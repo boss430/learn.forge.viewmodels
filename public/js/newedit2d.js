@@ -189,7 +189,7 @@ function createMyCircle(text) {
     }
 
     clone() {
-      return new MyCircle().copy(this);
+      return new MyCircle(text).copy(this);
     }
 
     copy(from) {
@@ -199,6 +199,7 @@ function createMyCircle(text) {
       this.centerY = from.centerY;
       this.radius = from.radius;
       this.tessSegments = from.tessSegments;
+      this.text = from.text
       this.modified();
       return this;
     }
