@@ -165,21 +165,32 @@ function MyEdgeLabel(Edit2DLayer) {
   return (label);
 }
 
-function saveMark() {
+function saveTextMark() {
+  var items = edit2dContext.layer.shapes;
 
+  items.forEach(sm => {
+    var vid = sm.id;
+    if (parseInt(vid)) { // edit2d item will have id in int if not is pestimate item
+      vid = uuid();
+      sm.id = vid; //store 
+    }
+
+    saveRawMarkup(sm.text, 'PE-FOOTING', vid, sm.centerX, sm.centerY, sm.style.fillColor);
+
+  });
 }
 
 function setupTextLabel(text) {
-  let myCircle = createMyCircle(text);
-  edit2dTools.insertSymbolTool.symbol = myCircle;
+  edit2dTools.insertSymbolTool.symbol = createMyCircle(text);
 }
 
-function createMyCircle(text) {
+function createMyCircle(text, cenX, cenY, color) {
   class MyCircle extends Autodesk.Edit2D.Circle {
-    constructor(text) {
-      super(0, 0, 0.1,
+    constructor(text, cenX, cenY, color) {
+      super(cenX || 0, cenY || 0, 0.1,
         new Autodesk.Edit2D.Style({
           lineWidth: 0.0000001,
+          color: color
         }));
       this.text = text || "default";
     }
@@ -199,7 +210,6 @@ function createMyCircle(text) {
       this.centerY = from.centerY;
       this.radius = from.radius;
       this.tessSegments = from.tessSegments;
-      this.text = from.text
       this.modified();
       return this;
     }
@@ -212,9 +222,70 @@ function createMyCircle(text) {
     }
   }
 
-  return new MyCircle(text);
+  return new MyCircle(text, cenX, cenY, color);
 }
 
+function createEdTextPosition(text, layer, color, cenX, cenY, id) {
+  var textItem = createMyCircle(text, Number(cenX), Number(cenY), color);
+  textItem.id = id;
+  textItem.layer = layer;
+
+  edit2dContext.layer.addShape(textItem);
+  return textItem;
+}
+//*******  load from database
+
+function loadTextMarkup(handle) {
+  if (!handle) return "name is require!!";
+  $.get(`${window.location.protocol}//${window.location.hostname}:3333/mongo/markup`,
+    {
+      handle: handle
+    }).then((res) => {
+      if (res.elementType === 'COUNT') {
+        createEdTextPosition(res.typename, res.layer, res.color, res.loc_x, res.loc_y, res.handle);
+        console.log("Count Load done!!")
+      }
+      if (res.elementType === 'LENGTH') {
+        //       createPesPolyMark(res.typename, res.layer, res.color, res.loc_x, res.loc_y, res.handle);
+        console.log("Lenght Load done!!")
+      }
+      if (res.elementType === 'AREA_RECTAN') {
+        //     createPesRectMark(res.typename, res.layer, res.color, res.loc_x, res.loc_y, res.handle);
+        console.log("Lenght Load done!!")
+      }
+      if (res.elementType === 'LENGTH1') {
+
+        //   createPesArrowMark(res.typename, res.layer, res.color, res.loc_x, res.loc_y, res.handle);
+        console.log("Lenght1 Load done!!")
+      }
+
+    }).fail(() => {
+      console.log("Load fail")
+    })
+}
+
+// load all '.*'
+function loadTextMarkupByType(typename) {
+  if (!typename) return "name is require!!";
+  $.get(`${window.location.protocol}//${window.location.hostname}:3333/mongo/markuptype`,
+    {
+      typename: typename
+    }).then((result) => {
+      result.forEach((res) => {
+        loadTextMarkup(res.handle);
+      })
+      console.log("Load done!!")
+    }).fail(() => {
+      console.log("Load fail")
+    })
+}
+
+function loadTextMark() { // load all
+  loadTextMarkupByType('.*');
+}
+
+
+//*******  about shape
 function setupShapeRule() {
   function shapeText(shape) {
     return shape.text;
