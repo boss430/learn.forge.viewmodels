@@ -1,4 +1,4 @@
-var edit2dContext = {
+let edit2dContext = {
   core: undefined,
   layer: undefined,
   gizmolayer: undefined,
@@ -6,7 +6,8 @@ var edit2dContext = {
   selection: undefined,
   snapper: undefined
 };
-var edit2d, edit2dTools;
+let edit2d, edit2dTools;
+let newPolyText;
 
 async function loadEdit2D() {
   const edit2dOption = {
@@ -25,9 +26,10 @@ async function loadEdit2D() {
     snapper: ctx.snapper// {Edit2DSnapper} Edit2D snapper
   };
   edit2dTools = edit2d.defaultTools;
-  setupProfile();
+  // setupProfile();
   setupShapeRule();
   setupTextLabel();
+  setupPolyText();
   console.log('Setup Edit2D done!!')
 }
 
@@ -189,10 +191,10 @@ function createMyCircle(text, cenX, cenY, color) {
     constructor(text, cenX, cenY, color) {
       super(cenX || 0, cenY || 0, 0.1,
         new Autodesk.Edit2D.Style({
-          lineWidth: 0.0000001,
-          color: color
+          lineWidth: 0.0000001
         }));
       this.text = text || "default";
+      this.labelColor = color
     }
 
     isPolyline() {
@@ -217,7 +219,12 @@ function createMyCircle(text, cenX, cenY, color) {
     setRadius(radius) {
       this.radius = radius;
       this.modified();
-      this.needsUpdate = true;
+      return this;
+    }
+
+    setLabelColor(labelColor) {
+      this.labelColor = labelColor
+      this.modified();
       return this;
     }
   }
@@ -301,9 +308,10 @@ function setupShapeRule() {
     // Note: Labels may be reused for different shapes. So, make sure that the style parameters are 
     //       not just modified for some subset of shapes, but reset for others.
     apply(label, shape, layer) {
-      label.container.style.top = "-20px";
       switch (shape.constructor.name) {
         case "MyCircle":
+          label.container.style.top = "-20px";
+          if (!!shape.labelColor) label.container.style.backgroundColor = shape.labelColor;
           break;
 
         default:
@@ -313,4 +321,19 @@ function setupShapeRule() {
   };
   return new Autodesk.Edit2D.ShapeLabelRule(edit2dContext.layer, shapeText,
     new LabelFilter(), new LabelStyleRule());
+}
+
+function setupPolyText() {
+  function setShapeText(e) {
+    console.log("set text")
+    e.polygon.text = newPolyText || "default";
+    edit2dContext.layer.update();
+  }
+  edit2dTools.polylineTool.addEventListener("polygonAdded", setShapeText)
+  edit2dTools.polygonTool.addEventListener("polygonAdded", setShapeText)
+}
+
+function setNewPolyText(text) {
+  newPolyText = text;
+  return newPolyText;
 }
