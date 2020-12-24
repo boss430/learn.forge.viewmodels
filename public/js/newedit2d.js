@@ -7,7 +7,33 @@ let edit2dContext = {
   snapper: undefined
 };
 let edit2d, edit2dTools;
-let newPolyText;
+let newPolyText, newPolyColor;
+
+let currentLayer = "unsaved";
+
+let defaultVar = {
+  text: "default",
+  color: "#000080"
+}
+
+const layerInfo = [
+  {
+    name: "S",
+    scheme: { font: "white", background: "orange" }
+  },
+  {
+    name: "F",
+    scheme: { font: "black", background: "white" }
+  },
+  {
+    name: "C",
+    scheme: { font: "white", background: "red" }
+  },
+  {
+    name: "R",
+    scheme: { font: "purple", background: "white" }
+  }
+]
 
 async function loadEdit2D() {
   const edit2dOption = {
@@ -26,9 +52,9 @@ async function loadEdit2D() {
     snapper: ctx.snapper// {Edit2DSnapper} Edit2D snapper
   };
   edit2dTools = edit2d.defaultTools;
+  edit2dTools.insertSymbolTool.symbol = createMyCircle(text);
   // setupProfile();
   setupShapeRule();
-  setupTextLabel();
   setupPolyText();
   console.log('Setup Edit2D done!!')
 }
@@ -63,8 +89,6 @@ function startTool(tool) {
 
   controller.activateTool(tool.getName());
 }
-
-const testingPoint = [{ "x": 9.820371627807617, "y": 5.126892566680908 }, { "x": 9.978544235229492, "y": 5.126892566680908 }, { "x": 9.978544235229492, "y": 5.028515338897705 }, { "x": 9.978544235229492, "y": 4.719290733337402 }, { "x": 10.07974624633789, "y": 4.719290733337402 }, { "x": 10.07974624633789, "y": 4.719290733337402 }];
 
 /**
  * Draw a polyline with tag
@@ -102,25 +126,6 @@ function updatePline(poly, tag, layer, size = "") {
   })
   return addedLabel;
 }
-
-const layerInfo = [
-  {
-    name: "S",
-    scheme: { font: "white", background: "orange" }
-  },
-  {
-    name: "F",
-    scheme: { font: "black", background: "white" }
-  },
-  {
-    name: "C",
-    scheme: { font: "white", background: "red" }
-  },
-  {
-    name: "R",
-    scheme: { font: "purple", background: "white" }
-  }
-]
 
 function getLayerColorScheme(layerName) {
   const layer = layerInfo.find((layer) => (layer.name === layerName));
@@ -176,25 +181,42 @@ function saveTextMark() {
       vid = uuid();
       sm.id = vid; //store 
     }
-
     saveRawMarkup(sm.text, 'PE-FOOTING', vid, sm.centerX, sm.centerY, sm.style.fillColor);
-
   });
 }
 
-function setupTextLabel(text) {
-  edit2dTools.insertSymbolTool.symbol = createMyCircle(text);
+function setupTextLabel(text, color) {
+  edit2dTools.insertSymbolTool.symbol = createMyCircle(text, color);
+}
+function savePolyMark() {
+  var items = edit2dContext.layer.shapes;
+
+  items.forEach(sm => {
+    var vid = sm.id;
+    // if(sm.constructor.name!='Path') continue; // skip if not path
+    if (parseInt(vid)) { // edit2d item will have id in int if not is pestimate item
+      vid = uuid();
+      console.log(vid);
+      sm.id = vid; //store 
+    }
+    var layer = 'PE-FORGE';
+    if (sm.layer) {
+      layer = sm.layer;
+    }
+    saveRawMarkupPolyline(sm.text, layer, vid, sm.points[0], sm.points, sm.labelColor);
+  });
 }
 
-function createMyCircle(text, cenX, cenY, color) {
+function createMyCircle(text, color, cenX, cenY) {
   class MyCircle extends Autodesk.Edit2D.Circle {
-    constructor(text, cenX, cenY, color) {
+    constructor(text, color, cenX, cenY) {
       super(cenX || 0, cenY || 0, 0.1,
         new Autodesk.Edit2D.Style({
-          lineWidth: 0.0000001
+          lineWidth: 0.0000001,
+          lineColor: color || defaultVar.color
         }));
-      this.text = text || "default";
-      this.labelColor = color
+      this.text = text || defaultVar.text;
+      this.labelColor = color || defaultVar.color;
     }
 
     isPolyline() {
@@ -202,16 +224,13 @@ function createMyCircle(text, cenX, cenY, color) {
     }
 
     clone() {
-      return new MyCircle(text).copy(this);
+      return new MyCircle(this.text, this.labelColor).copy(this);
     }
 
     copy(from) {
       super.copy(from);
-      this.polygon = from.polygon.clone();
-      this.centerX = from.centerX;
-      this.centerY = from.centerY;
-      this.radius = from.radius;
-      this.tessSegments = from.tessSegments;
+      this.text = from.text;
+      this.labelColor = from.labelColor;
       this.modified();
       return this;
     }
@@ -239,6 +258,15 @@ function createEdTextPosition(text, layer, color, cenX, cenY, id) {
 
   edit2dContext.layer.addShape(textItem);
   return textItem;
+}
+
+function createEdPolyMark(tag, layer, color, pt, pts, id) {
+  setNewPolyStyle(tag, color);
+  if (!pts) return;
+  const polyline = new Autodesk.Edit2D.Polyline(pts);
+  edit2dContext.layer.addShape(polyline);
+  updatePline(polyline, tag, layer, size);
+
 }
 //*******  load from database
 
@@ -308,13 +336,10 @@ function setupShapeRule() {
     // Note: Labels may be reused for different shapes. So, make sure that the style parameters are 
     //       not just modified for some subset of shapes, but reset for others.
     apply(label, shape, layer) {
+      label.container.style.top = "-20px";
+      if (!!shape.labelColor) label.container.style.backgroundColor = shape.labelColor;
       switch (shape.constructor.name) {
         case "MyCircle":
-          label.container.style.top = "-20px";
-          if (!!shape.labelColor) label.container.style.backgroundColor = shape.labelColor;
-          break;
-
-        default:
           break;
       }
     }
@@ -324,16 +349,36 @@ function setupShapeRule() {
 }
 
 function setupPolyText() {
-  function setShapeText(e) {
-    console.log("set text")
-    e.polygon.text = newPolyText || "default";
+  function setShape(e) {
+    const shape = e.type === "symbolInserted" ? e.symbol : e.polygon;
+    const color = new RGBColor(defaultVar.color);
+    shape.text = defaultVar.text;
+    shape.labelColor = color.toRGB();
+    switch (e.type) {
+      case "polygonAdded":
+        shape.style.setLineColor(color.r, color.g, color.b);
+        shape.style.setFillColor(color.r, color.g, color.b);
+        break;
+      case "symbolInserted":
+        break;
+    }
     edit2dContext.layer.update();
   }
-  edit2dTools.polylineTool.addEventListener("polygonAdded", setShapeText)
-  edit2dTools.polygonTool.addEventListener("polygonAdded", setShapeText)
+  edit2dTools.polylineTool.addEventListener("polygonAdded", setShape);
+  edit2dTools.polygonTool.addEventListener("polygonAdded", setShape);
+  edit2dTools.insertSymbolTool.addEventListener("symbolInserted", setShape);
 }
 
-function setNewPolyText(text) {
+/**
+ * Set new text when create new Polygon/Polyline
+ * @param {string} text Text to set as default 
+ * @param {string} color Label color to set as default 
+ */
+function setNewPolyStyle(text, color) {
   newPolyText = text;
-  return newPolyText;
+  newPolyColor = color;
+
+  defaultVar.text = !!text ? text : defaultVar.text;
+  defaultVar.color = !!color ? color : defaultVar.color;
+  return true;
 }
