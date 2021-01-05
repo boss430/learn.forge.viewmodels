@@ -49,7 +49,7 @@ const session = [
 
 router.get('/buckets', async (req, res, next) => {
     const user = req.query.user.toString();
-    const bucket_name = req.query.id;//note! its a id.
+    const bucket_name = req.query.id;//note! its an id.
     if (!user || user === "") {
         res.sendStatus(400);
         return;
